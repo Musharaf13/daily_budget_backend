@@ -83,10 +83,14 @@ app.post("/signup", async (req, res) => {
 });
 
 app.post("/updatePassword", async (req, res) => {
+  
   const { new_password, phone_number } = req.body;
-  // console.log(pooolObj);
+
+  console.log(req.body);
 
   var query = `update users set password='${new_password}' where phone_number='${phone_number}'`;
+  console.log("query");
+  console.log(query);
   pool.query(query, (error, result) => {
     if (!error) {
       res.send({
