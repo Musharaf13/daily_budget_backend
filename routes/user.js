@@ -1,8 +1,14 @@
 const express = require("express");
 const app = express.Router();
 const pool = require("./config");
+const moment = require("moment");
 // const pool = config.pool;
 // const pooolObj = config.poolObj;
+
+app.get("/", (req, res) => {
+  console.log("this is  user screen");
+  res.send("this is  user screen");
+});
 
 app.post("/login", async (req, res) => {
   console.log("login API called");
@@ -49,8 +55,8 @@ app.post("/signup", async (req, res) => {
   console.log("body");
   console.log(req.body);
   var query = `INSERT INTO public.users(
-    email, password, phone_number)
-    VALUES ('${email}', '${passwogitrd}', '${phone_number}') returning id,email,password,phone_number;`;
+    email, password, phone_number, created_at)
+    VALUES ('${email}', '${password}', '${phone_number}','${calcTime()}') returning id,email,password,phone_number;`;
   pool.query(query, (error, result) => {
     if (!error) {
       console.log({
@@ -76,13 +82,36 @@ app.post("/signup", async (req, res) => {
   });
 });
 
-app.get("/", (req, res) => {
-  console.log("this is  user screen");
-  res.send("this is  user screen");
+app.post("/updatePassword", async (req, res) => {
+  const { new_password, phone_number } = req.body;
+  // console.log(pooolObj);
+
+  var query = `update users set password='${new_password}' where phone_number='${phone_number}'`;
+  pool.query(query, (error, result) => {
+    if (!error) {
+      res.send({
+        status: true,
+        message: "Password Successfuly updated",
+        data: result.rows,
+      });
+    } else {
+      res.send({
+        status: false,
+        message: "Failed to Update the Password " + error.message,
+      });
+    }
+  });
 });
 
-app.post("/login", (req, res) => {
-  res.send("You are in Users file now");
-});
+function calcTime() {
+  offset = "+5.0";
+  d = new Date();
+  utc = d.getTime() + d.getTimezoneOffset() * 60000;
+  currentDate = new Date(utc + 3600000 * offset);
+
+  var dateString = moment(currentDate).format("YYYY-MM-DD HH:mm:ss");
+
+  return dateString;
+}
 
 module.exports = app;
