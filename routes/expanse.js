@@ -1,3 +1,16 @@
+const express = require("express");
+const app = express.Router();
+const pool = require("./config");
+const utils = require("../utils/utils");
+
+// const pool = config.pool;
+// const pooolObj = config.poolObj;
+
+app.get("/", (req, res) => {
+  console.log("this is  expenses screen");
+  res.send("this is  expenses screen");
+});
+
 app.post("/add", async (req, res) => {
   const { categoryId, amount, description, userId } = req.body;
 
@@ -23,3 +36,5 @@ app.post("/add", async (req, res) => {
     }
   });
 });
+
+module.exports = app;
