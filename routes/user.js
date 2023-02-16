@@ -89,7 +89,7 @@ app.post("/updatePassword", async (req, res) => {
 
   console.log(req.body);
 
-  var query = `update users set password='${new_password}' where phone_number='${phone_number}'`;
+  var query = `update users set password='${new_password}' where phone_number='${phone_number}' returning id`;
   console.log("query");
   console.log(query);
   pool.query(query, (error, result) => {
@@ -155,9 +155,9 @@ app.post("/addMonthlyBudget", async (req, res) => {
 app.get("/fetchMonthlyBudgetDetails", async (req, res) => {
   const { userId } = req.query;
 
-console.log("req body");
-console.log(req.query);
-console.log(userId);
+  console.log("req body");
+  console.log(req.query);
+  console.log(userId);
 
   var query = `Select * from monthly_budgets where user_id=${userId} order by created_at desc limit 1`;
   console.log(query);
@@ -175,7 +175,5 @@ console.log(userId);
     }
   });
 });
-
-
 
 module.exports = app;
