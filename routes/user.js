@@ -2,6 +2,8 @@ const express = require("express");
 const app = express.Router();
 const pool = require("./config");
 const moment = require("moment");
+const utils = require("../utils/utils");
+
 // const pool = config.pool;
 // const pooolObj = config.poolObj;
 
@@ -83,7 +85,6 @@ app.post("/signup", async (req, res) => {
 });
 
 app.post("/updatePassword", async (req, res) => {
-  
   const { new_password, phone_number } = req.body;
 
   console.log(req.body);
@@ -117,5 +118,64 @@ function calcTime() {
 
   return dateString;
 }
+
+app.post("/addMonthlyBudget", async (req, res) => {
+  const {
+    userId,
+    monthlyBudget,
+    dailyBudget,
+    workingDaysBudget,
+    weekendsBudget,
+  } = req.body;
+
+  console.log("req body");
+
+  console.log(req.body);
+
+  var query = `INSERT INTO public.monthly_budgets(
+    user_id, monthly_budget, daily_budget,working_day_budget, weekends_budget,  created_at)
+    VALUES ( ${userId}, ${monthlyBudget}, 
+      ${dailyBudget}, ${workingDaysBudget}, ${weekendsBudget}, '${utils.calTime()}');`;
+  console.log(query);
+  pool.query(query, (error, result) => {
+    if (!error) {
+      res.send({
+        status: true,
+        data: result.rows,
+      });
+    } else {
+      res.send({
+        status: false,
+        message: "Failed to add Expense" + error.message,
+      });
+    }
+  });
+});
+
+app.get("/fetchMonthlyBudgetDetails", async (req, res) => {
+  const { userId } = req.query;
+
+console.log("req body");
+console.log(req.query);
+console.log(userId);
+
+  var query = `Select * from monthly_budgets where user_id=${userId} order by created_at desc limit 1`;
+  console.log(query);
+  pool.query(query, (error, result) => {
+    if (!error) {
+      res.send({
+        status: true,
+        data: result.rows,
+      });
+    } else {
+      res.send({
+        status: false,
+        message: "Failed to add Expense" + error.message,
+      });
+    }
+  });
+});
+
+
 
 module.exports = app;

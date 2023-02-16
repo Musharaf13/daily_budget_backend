@@ -12,7 +12,7 @@ app.get("/", (req, res) => {
 });
 
 app.post("/add", async (req, res) => {
-  const { categoryId, amount, userId, created_at } = req.body;
+  const { categoryId, amount, userId, date } = req.body;
   var description = req.body.description ?? "";
   console.log("req body");
 
@@ -21,7 +21,7 @@ app.post("/add", async (req, res) => {
   var query = `INSERT INTO public.expenses(
          category_id, amount, description, user_id, created_at)
         VALUES (${categoryId}, ${amount}, '${description}', ${userId}, '${
-    created_at ?? utils.calTime()
+    date == "" ? utils.calTime() : date
   }');`;
   console.log(query);
   pool.query(query, (error, result) => {
