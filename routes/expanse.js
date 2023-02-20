@@ -40,31 +40,50 @@ app.post("/add", async (req, res) => {
 });
 
 app.post("/fetchExpansesAnalysis", async (req, res) => {
-  const { userId } = req.body;
+  const { userId, startDate, endDate } = req.body;
 
   console.log("req body");
 
   console.log(req.body);
 
-  var query = `Select  Sum(amount) as amount, 
-  (Select Sum(amount)
-  from expenses
-  ) as total_expense,
-  To_Char(created_at::date,'dd') as date from expenses
-  where user_id='${userId}'
-  group by date
+  var analyticsQuery = `Select 
+  (Select Sum(amount) from expenses where user_id=${userId} and created_at::date between '${startDate}'::date and '${endDate}'::date) as total_expense,
+  Sum(amount) as amount, 
+  To_Char(created_at::date,'dd') as date from expenses 
+    where user_id=${userId} and created_at::date between '${startDate}'::date and '${endDate}'::date
+    group by date
   `;
-  console.log(query);
-  pool.query(query, (error, result) => {
+
+  var limitsQuery = `select
+  monthly_budget,working_day_budget, weekends_budget, daily_budget from monthly_budgets 
+  where created_at::date between '${startDate}'::date and '${endDate}'::date and user_id=${userId}
+  order by created_at desc limit 1`;
+  console.log("analysis query");
+  console.log(analyticsQuery);
+  console.log("limits Query");
+  console.log(limitsQuery);
+  pool.query(analyticsQuery, async (error, result) => {
     if (!error) {
-      res.send({
-        status: true,
-        data: result.rows,
+      pool.query(limitsQuery, (limitsError, limitsResult) => {
+        if (!limitsError) {
+          res.send({
+            status: true,
+            data: {
+              limits: limitsResult.rows,
+              expenseAnalysis: result.rows,
+            },
+          });
+        } else {
+          res.send({
+            status: false,
+            message: "Failed to fetch Limits" + limitsError.message,
+          });
+        }
       });
     } else {
       res.send({
         status: false,
-        message: "Failed to add Expense" + error.message,
+        message: "Failed to Expense Analysis" + error.message,
       });
     }
   });
